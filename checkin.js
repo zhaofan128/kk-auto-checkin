@@ -77,6 +77,8 @@ async function solveTurnstile() {
     });
 
     const deadline = Date.now() + TOKEN_TIMEOUT_MS;
+    let lastClick = 0;
+    let clicks = 0;
     while (Date.now() < deadline) {
       const token = await page.evaluate(() => {
         const input = document.querySelector('input[name="cf-turnstile-response"]');
@@ -90,6 +92,21 @@ async function solveTurnstile() {
       if (token) {
         log(`Turnstile 验证完成，token 长度 ${token.length}`);
         return token;
+      }
+
+      // 云端 IP 常被要求点击“请验证您是真人”，这里模拟一次真实点击
+      if (clicks < 3 && Date.now() - lastClick > 15000) {
+        const frame = page.frames().find((f) => f.url().includes('challenges.cloudflare.com'));
+        if (frame) {
+          const element = await frame.frameElement().catch(() => null);
+          const box = element && (await element.boundingBox().catch(() => null));
+          if (box && box.width > 50 && box.height > 20) {
+            await page.mouse.click(box.x + 30, box.y + box.height / 2).catch(() => {});
+            clicks += 1;
+            lastClick = Date.now();
+            log('检测到人机验证，已尝试点击验证框');
+          }
+        }
       }
       await page.waitForTimeout(2000);
     }
