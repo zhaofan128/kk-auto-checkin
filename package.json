@@ -1,0 +1,13 @@
+{
+  "name": "kk-auto-checkin",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Daily check-in automation for kk.xjidjjdj.xyz via GitHub Actions",
+  "main": "checkin.js",
+  "scripts": {
+    "start": "node checkin.js"
+  },
+  "dependencies": {
+    "playwright": "1.65.1"
+  }
+}

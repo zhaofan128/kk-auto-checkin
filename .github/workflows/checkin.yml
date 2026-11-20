@@ -1,0 +1,41 @@
+name: Daily check-in
+
+on:
+  schedule:
+    # 每天 00:17 UTC = 北京时间 08:17
+    - cron: '17 0 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-checkin
+  cancel-in-progress: false
+
+jobs:
+  checkin:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run check-in
+        env:
+          KK_TOKEN: ${{ secrets.KK_TOKEN }}
+          KK_BASE_URL: https://kk.xjidjjdj.xyz
+          KK_HEADLESS: '0'
+        run: xvfb-run -a -s "-screen 0 1366x800x24" node checkin.js
