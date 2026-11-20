@@ -36,8 +36,8 @@ async function getStatus() {
   return data.data;
 }
 
-// 在真实浏览器里打开站点，触发 Cloudflare Turnstile 并取出验证 token
-async function solveTurnstile() {
+// 在真实浏览器里完成 Turnstile 验证，并直接在该页面内调用签到接口
+async function checkinViaBrowser() {
   const launchOptions = {
     headless: process.env.KK_HEADLESS !== '0',
     args: [
@@ -79,8 +79,9 @@ async function solveTurnstile() {
     const deadline = Date.now() + TOKEN_TIMEOUT_MS;
     let lastClick = 0;
     let clicks = 0;
+    let turnstileToken = '';
     while (Date.now() < deadline) {
-      const token = await page.evaluate(() => {
+      turnstileToken = await page.evaluate(() => {
         const input = document.querySelector('input[name="cf-turnstile-response"]');
         if (input && input.value) return input.value;
         try {
@@ -89,9 +90,9 @@ async function solveTurnstile() {
           return '';
         }
       });
-      if (token) {
-        log(`Turnstile 验证完成，token 长度 ${token.length}`);
-        return token;
+      if (turnstileToken) {
+        log(`Turnstile 验证完成，token 长度 ${turnstileToken.length}`);
+        break;
       }
 
       // 云端 IP 常被要求点击“请验证您是真人”，这里模拟一次真实点击
@@ -110,8 +111,38 @@ async function solveTurnstile() {
       }
       await page.waitForTimeout(2000);
     }
-    await page.screenshot({ path: '/tmp/turnstile-timeout.png' }).catch(() => {});
-    throw new Error('Turnstile 验证超时，未能获取 token');
+
+    if (!turnstileToken) {
+      await page.screenshot({ path: '/tmp/turnstile-timeout.png' }).catch(() => {});
+      throw new Error('Turnstile 验证超时，未能获取 token');
+    }
+
+    // 在页面内调用，沿用浏览器的会话、Cookie 和网络指纹
+    const apiUrl = `${BASE_URL}/api/user/checkin?turnstile=${encodeURIComponent(turnstileToken)}`;
+    const res = await page.evaluate(async ({ url, auth }) => {
+      try {
+        const r = await fetch(url, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${auth}`,
+            'Content-Type': 'application/json',
+          },
+          body: '{}',
+        });
+        return { status: r.status, text: await r.text() };
+      } catch (err) {
+        return { error: String(err) };
+      }
+    }, { url: apiUrl, auth: TOKEN });
+
+    if (res.error) {
+      throw new Error(`浏览器内签到请求失败: ${res.error}`);
+    }
+    try {
+      return JSON.parse(res.text);
+    } catch {
+      throw new Error(`签到接口返回异常 (HTTP ${res.status}): ${res.text.slice(0, 200)}`);
+    }
   } finally {
     await browser.close();
   }
@@ -139,8 +170,7 @@ async function main() {
 
   for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt += 1) {
     log(`第 ${attempt}/${MAX_ATTEMPTS} 次尝试签到...`);
-    const turnstileToken = MANUAL_TOKEN || (await solveTurnstile());
-    const result = await doCheckin(turnstileToken);
+    const result = MANUAL_TOKEN ? await doCheckin(MANUAL_TOKEN) : await checkinViaBrowser();
 
     if (result && result.success) {
       const awarded = result.data && result.data.quota_awarded;
