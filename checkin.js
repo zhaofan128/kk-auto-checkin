@@ -54,7 +54,15 @@ async function solveTurnstile() {
     launchOptions.proxy = { server: proxy };
   }
 
-  const browser = await chromium.launch(launchOptions);
+  let browser;
+  const channel = process.env.KK_CHANNEL;
+  try {
+    browser = await chromium.launch(channel ? { ...launchOptions, channel } : launchOptions);
+  } catch (err) {
+    if (!channel) throw err;
+    log(`启动 ${channel} 失败，回退到内置 Chromium: ${err.message.split('\n')[0]}`);
+    browser = await chromium.launch(launchOptions);
+  }
   try {
     const context = await browser.newContext({
       locale: 'zh-CN',
@@ -85,6 +93,7 @@ async function solveTurnstile() {
       }
       await page.waitForTimeout(2000);
     }
+    await page.screenshot({ path: '/tmp/turnstile-timeout.png' }).catch(() => {});
     throw new Error('Turnstile 验证超时，未能获取 token');
   } finally {
     await browser.close();

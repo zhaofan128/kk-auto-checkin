@@ -43,5 +43,14 @@ jobs:
           KK_TOKEN: ${{ secrets.KK_TOKEN }}
           KK_BASE_URL: https://kk.xjidjjdj.xyz
           KK_HEADLESS: '0'
+          KK_CHANNEL: chrome
           KK_FORCE: ${{ inputs.force }}
         run: xvfb-run -a -s "-screen 0 1366x800x24" node checkin.js
+
+      - name: Upload debug screenshot
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: turnstile-timeout
+          path: /tmp/turnstile-timeout.png
+          if-no-files-found: ignore
