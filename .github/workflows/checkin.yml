@@ -5,6 +5,11 @@ on:
     # 每天 00:17 UTC = 北京时间 08:17
     - cron: '17 0 * * *'
   workflow_dispatch:
+    inputs:
+      force:
+        description: '忽略“今日已签到”，强制走一遍 Turnstile + 签到接口（调试用）'
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -38,4 +43,5 @@ jobs:
           KK_TOKEN: ${{ secrets.KK_TOKEN }}
           KK_BASE_URL: https://kk.xjidjjdj.xyz
           KK_HEADLESS: '0'
+          KK_FORCE: ${{ inputs.force }}
         run: xvfb-run -a -s "-screen 0 1366x800x24" node checkin.js

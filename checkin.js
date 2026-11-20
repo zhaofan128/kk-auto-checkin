@@ -5,6 +5,7 @@ const TOKEN = (process.env.KK_TOKEN || '').trim();
 const MAX_ATTEMPTS = Math.max(1, Number(process.env.KK_MAX_ATTEMPTS) || 3);
 const TOKEN_TIMEOUT_MS = Math.max(15000, Number(process.env.KK_TOKEN_TIMEOUT_MS) || 90000);
 const MANUAL_TOKEN = (process.env.KK_TURNSTILE_TOKEN || '').trim();
+const FORCE = /^(1|true)$/i.test(process.env.KK_FORCE || '');
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const log = (...args) => console.log(new Date().toISOString(), ...args);
@@ -105,7 +106,7 @@ async function main() {
   const stats = status.stats || {};
   log(`今日已签到: ${stats.checked_in_today ? '是' : '否'}，累计 ${stats.total_checkins || 0} 次`);
 
-  if (stats.checked_in_today) {
+  if (stats.checked_in_today && !FORCE) {
     log('今天已经签到过了，无需重复操作。');
     return;
   }
