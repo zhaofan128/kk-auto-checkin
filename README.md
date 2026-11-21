@@ -10,6 +10,7 @@
 | [DGB 公益站](https://freeapi.dgbmc.top) | 账号密码 | 新版 JWT 登录，无验证码 |
 | [AIAIAI 工具箱](https://api.aiaiai001.com) | 账号密码 | 无验证码 |
 | [帮帮程序员](https://helpcoder.cc) | 账号密码 | 无验证码 |
+| [可萌中转站](https://api456.me) | 账号密码 | 新版 JWT 登录，签到无需验证码 |
 
 ## 原理
 

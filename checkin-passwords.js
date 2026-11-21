@@ -2,6 +2,7 @@ const SITES = [
   { name: 'DGB 公益站', url: 'https://freeapi.dgbmc.top' },
   { name: 'AIAIAI 工具箱', url: 'https://api.aiaiai001.com' },
   { name: '帮帮程序员', url: 'https://helpcoder.cc' },
+  { name: '可萌中转站', url: 'https://api456.me' },
 ];
 
 const USERNAME = (process.env.CHECKIN_USERNAME || '').trim();
