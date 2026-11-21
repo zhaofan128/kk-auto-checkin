@@ -38,7 +38,17 @@ jobs:
       - name: Install Playwright Chromium
         run: npx playwright install --with-deps chromium
 
-      - name: Run check-in
+      - name: Run password check-ins
+        id: passwords
+        continue-on-error: true
+        env:
+          CHECKIN_USERNAME: ${{ secrets.CHECKIN_USERNAME }}
+          CHECKIN_PASSWORD: ${{ secrets.CHECKIN_PASSWORD }}
+        run: node checkin-passwords.js
+
+      - name: Run kk check-in (token + Turnstile)
+        id: kk
+        continue-on-error: true
         env:
           KK_TOKEN: ${{ secrets.KK_TOKEN }}
           KK_BASE_URL: https://kk.xjidjjdj.xyz
@@ -48,9 +58,13 @@ jobs:
         run: xvfb-run -a -s "-screen 0 1366x800x24" node checkin.js
 
       - name: Upload debug screenshot
-        if: failure()
+        if: steps.kk.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: turnstile-timeout
           path: /tmp/turnstile-timeout.png
           if-no-files-found: ignore
+
+      - name: Fail if any check-in failed
+        if: steps.passwords.outcome == 'failure' || steps.kk.outcome == 'failure'
+        run: exit 1
