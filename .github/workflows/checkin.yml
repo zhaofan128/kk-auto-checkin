@@ -44,6 +44,7 @@ jobs:
         env:
           CHECKIN_USERNAME: ${{ secrets.CHECKIN_USERNAME }}
           CHECKIN_PASSWORD: ${{ secrets.CHECKIN_PASSWORD }}
+          SEEKAI_TOKEN: ${{ secrets.SEEKAI_TOKEN }}
         run: node checkin-passwords.js
 
       - name: Run kk check-in (token + Turnstile)

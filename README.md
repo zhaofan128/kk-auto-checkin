@@ -11,6 +11,7 @@
 | [AIAIAI 工具箱](https://api.aiaiai001.com) | 账号密码 | 无验证码 |
 | [帮帮程序员](https://helpcoder.cc) | 账号密码 | 无验证码 |
 | [可萌中转站](https://api456.me) | 账号密码 | 新版 JWT 登录，签到无需验证码 |
+| [SeekAI](https://seekai.cc) | 访问令牌 | 系统访问令牌，签到无需验证码 |
 
 ## 原理
 
@@ -26,6 +27,7 @@
    - `KK_TOKEN`：kk 站的 `nap_` 访问令牌
    - `CHECKIN_USERNAME`：账号密码类站点的默认用户名
    - `CHECKIN_PASSWORD`：对应的默认密码
+   - `SEEKAI_TOKEN`：SeekAI 安全设置里生成的系统访问令牌
 3. 打开 **Actions** 页面，选择 `Daily check-in`，点击 **Run workflow** 手动验证；勾选 `force` 可强制重跑 kk 的 Turnstile 验证流程。
 4. 之后每天北京时间 08:17 自动执行（cron 为 UTC 00:17，可在 `.github/workflows/checkin.yml` 中修改）。
 
@@ -50,6 +52,7 @@ KK_TOKEN='nap_xxx' node checkin.js
 | --- | --- | --- |
 | `CHECKIN_USERNAME` | 账号密码类站点的用户名 | - |
 | `CHECKIN_PASSWORD` | 账号密码类站点的密码 | - |
+| `SEEKAI_TOKEN` | SeekAI 系统访问令牌 | - |
 | `KK_TOKEN` | kk 站访问令牌 | - |
 | `KK_BASE_URL` | kk 站点地址 | `https://kk.xjidjjdj.xyz` |
 | `KK_HEADLESS` | 设为 `0` 以有头模式运行 | 有头 |

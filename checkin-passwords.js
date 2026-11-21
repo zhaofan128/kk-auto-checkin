@@ -3,6 +3,7 @@ const SITES = [
   { name: 'AIAIAI 工具箱', url: 'https://api.aiaiai001.com' },
   { name: '帮帮程序员', url: 'https://helpcoder.cc' },
   { name: '可萌中转站', url: 'https://api456.me' },
+  { name: 'SeekAI', url: 'https://seekai.cc', tokenEnv: 'SEEKAI_TOKEN' },
 ];
 
 const USERNAME = (process.env.CHECKIN_USERNAME || '').trim();
@@ -55,7 +56,15 @@ function authHeaders(session) {
 }
 
 async function processSite(site) {
-  const session = await login(site);
+  let session;
+  if (site.tokenEnv) {
+    const token = (process.env[site.tokenEnv] || '').trim();
+    if (!token) throw new Error(`缺少环境变量 ${site.tokenEnv}`);
+    session = { token, user: null, cookie: '' };
+  } else {
+    session = await login(site);
+  }
+
   const status = await request(`${site.url}/api/user/checkin`, {
     headers: authHeaders(session),
   });
@@ -88,7 +97,8 @@ async function processSite(site) {
 }
 
 async function main() {
-  if (!USERNAME || !PASSWORD) {
+  const needsPassword = SITES.some((site) => !site.tokenEnv);
+  if (needsPassword && (!USERNAME || !PASSWORD)) {
     throw new Error('缺少环境变量 CHECKIN_USERNAME / CHECKIN_PASSWORD');
   }
 
