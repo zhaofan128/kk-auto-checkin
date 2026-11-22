@@ -2,7 +2,10 @@ name: Daily check-in
 
 on:
   schedule:
-    # 一天三次兜底（北京时间 06:20 / 09:10 / 13:30），签过会自动跳过
+    # 神秘小站每天凌晨 2 点开放名额，抢名额时段
+    - cron: '0 18 * * *'
+    - cron: '10 18 * * *'
+    # 常规兜底（北京时间 06:20 / 09:10 / 13:30），签过会跳过
     - cron: '20 22 * * *'
     - cron: '10 1 * * *'
     - cron: '30 5 * * *'
@@ -47,6 +50,7 @@ jobs:
           CHECKIN_USERNAME: ${{ secrets.CHECKIN_USERNAME }}
           CHECKIN_PASSWORD: ${{ secrets.CHECKIN_PASSWORD }}
           SEEKAI_TOKEN: ${{ secrets.SEEKAI_TOKEN }}
+          BENST_TOKEN: ${{ secrets.BENST_TOKEN }}
         run: node checkin-passwords.js
 
       - name: Run kk check-in (token + Turnstile)

@@ -4,6 +4,7 @@ const SITES = [
   { name: '帮帮程序员', url: 'https://helpcoder.cc' },
   { name: '可萌中转站', url: 'https://api456.me' },
   { name: 'SeekAI', url: 'https://seekai.cc', tokenEnv: 'SEEKAI_TOKEN' },
+  { name: '神秘小站', url: 'http://newapi.benst.asia', tokenEnv: 'BENST_TOKEN' },
 ];
 
 const USERNAME = (process.env.CHECKIN_USERNAME || '').trim();
