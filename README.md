@@ -11,8 +11,8 @@
 | [AIAIAI 工具箱](https://api.aiaiai001.com) | 账号密码 | 无验证码 |
 | [帮帮程序员](https://helpcoder.cc) | 账号密码 | 无验证码 |
 | [可萌中转站](https://api456.me) | 账号密码 | 新版 JWT 登录，签到无需验证码 |
-| [SeekAI](https://seekai.cc) | 访问令牌 | 系统访问令牌，签到无需验证码 |
-| [神秘小站](http://newapi.benst.asia) | 访问令牌 | 每日名额有限，凌晨 02:00 开放，已安排 02:00/02:10 抢名额 |
+| [SeekAI](https://seekai.cc) | 访问令牌 | 签到时需要 Turnstile，脚本用真实浏览器完成并自动点击验证框 |
+| [神秘小站](http://newapi.benst.asia) | 访问令牌 | 每日名额有限，凌晨 02:00 开放，已安排 02:02/02:12/02:22 抢名额 |
 
 ## 原理
 
@@ -38,7 +38,7 @@
    - `SEEKAI_TOKEN`：SeekAI 安全设置里生成的系统访问令牌
    - `BENST_TOKEN`：神秘小站的 `nap_` 访问令牌
 3. 打开 **Actions** 页面，选择 `Daily check-in`，点击 **Run workflow** 手动验证；勾选 `force` 可强制重跑 kk 的 Turnstile 验证流程。
-4. 之后每天北京时间 **02:00 / 02:10** 抢神秘小站名额，**06:20 / 09:10 / 13:30** 继续兜底（cron 在 `.github/workflows/checkin.yml` 中修改）。
+4. 之后每天北京时间 **02:02 / 02:12 / 02:22** 抢神秘小站名额，**06:20 / 09:10 / 13:30** 继续兜底（cron 在 `.github/workflows/checkin.yml` 中修改）。
 
 ## 本地运行
 

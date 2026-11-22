@@ -2,9 +2,10 @@ name: Daily check-in
 
 on:
   schedule:
-    # 神秘小站每天凌晨 2 点开放名额，抢名额时段
-    - cron: '0 18 * * *'
-    - cron: '10 18 * * *'
+    # 神秘小站凌晨 2 点开放名额，错开整点避免 GitHub 调度高峰
+    - cron: '2 18 * * *'
+    - cron: '12 18 * * *'
+    - cron: '22 18 * * *'
     # 常规兜底（北京时间 06:20 / 09:10 / 13:30），签过会跳过
     - cron: '20 22 * * *'
     - cron: '10 1 * * *'
@@ -49,9 +50,17 @@ jobs:
         env:
           CHECKIN_USERNAME: ${{ secrets.CHECKIN_USERNAME }}
           CHECKIN_PASSWORD: ${{ secrets.CHECKIN_PASSWORD }}
-          SEEKAI_TOKEN: ${{ secrets.SEEKAI_TOKEN }}
           BENST_TOKEN: ${{ secrets.BENST_TOKEN }}
         run: node checkin-passwords.js
+
+      - name: Run SeekAI check-in (token + Turnstile)
+        id: seekai
+        continue-on-error: true
+        env:
+          SEEKAI_TOKEN: ${{ secrets.SEEKAI_TOKEN }}
+          KK_HEADLESS: '0'
+          KK_CHANNEL: chrome
+        run: xvfb-run -a -s "-screen 0 1366x800x24" node checkin-browser-token.js
 
       - name: Run kk check-in (token + Turnstile)
         id: kk
@@ -65,7 +74,7 @@ jobs:
         run: xvfb-run -a -s "-screen 0 1366x800x24" node checkin.js
 
       - name: Upload debug screenshot
-        if: steps.kk.outcome == 'failure'
+        if: steps.kk.outcome == 'failure' || steps.seekai.outcome == 'failure'
         uses: actions/upload-artifact@v4
         with:
           name: turnstile-timeout
@@ -90,5 +99,5 @@ jobs:
           git push origin HEAD:main
 
       - name: Fail if any check-in failed
-        if: steps.passwords.outcome == 'failure' || steps.kk.outcome == 'failure'
+        if: steps.passwords.outcome == 'failure' || steps.kk.outcome == 'failure' || steps.seekai.outcome == 'failure'
         run: exit 1
